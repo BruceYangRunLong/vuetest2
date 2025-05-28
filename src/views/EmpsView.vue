@@ -50,7 +50,7 @@ import axios from 'axios'
 import { reactive, ref } from 'vue'
 
 const currentPage4 = ref(4)
-const pageSize4 = ref(100)
+const pageSize4 = ref(5)
 const size = ref("large")
 
 const background = ref(false)
@@ -61,7 +61,6 @@ const getDataFromBackEnd = () => {
         'http://localhost:8081/emp/getAllEmpsByPageCondition', {
         params: {
             pageSize: pageSize4.value,
-
             pageNum: currentPage4.value
         }
     }
