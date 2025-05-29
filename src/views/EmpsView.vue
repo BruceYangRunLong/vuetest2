@@ -9,12 +9,15 @@
                 <el-table-column prop="mgr" label="mgr" width="120" />
                 <el-table-column prop="hiredate" label="Hiredate" width="120" />
                 <el-table-column prop="sal" label="Salary" width="120" />
+                <el-table-column prop="comm" label="Commission" width="120" />
                 <el-table-column fixed="right" label="Operations" min-width="120">
-                    <template #default>
-                        <el-button link type="primary" size="small" @click="handleClick">
-                            Detail
+                    <template #default="scope">
+                        <el-button link type="primary" size="small" @click="editDataFromBackEndGetEmpById(scope.row)">
+                            Edit
                         </el-button>
-                        <el-button link type="primary" size="small">Edit</el-button>
+                        <el-button link type="primary" size="small">
+                            Delete
+                        </el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -26,8 +29,8 @@
         <div class="demo-pagination-block">
             <div class="demonstration">All combined</div>
             <el-pagination v-model:current-page="currentPage4" v-model:page-size="pageSize4"
-                :page-sizes="[100, 200, 300, 400]" :size="size" :disabled="disabled" :background="background"
-                layout="total, sizes, prev, pager, next, jumper" :total="400" @size-change="handleSizeChange"
+                :page-sizes="[5, 10, 15, 20]" :size="size" :disabled="disabled" :background="background"
+                layout="total, sizes, prev, pager, next, jumper" :total="totalValue" @size-change="handleSizeChange"
                 @current-change="handleCurrentChange" />
         </div>
     </div>
@@ -39,6 +42,62 @@
     </div>
 
 
+
+
+
+    <div>
+        <el-dialog v-model="dialogFormVisible" title="Edit Employee" width="500">
+            <el-form :model="form">
+                <el-form-item label="empno" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.empno" autocomplete="off" />
+                </el-form-item>
+                <el-form-item label="ename" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.ename" autocomplete="off" />
+                </el-form-item>
+                <el-form-item label="job" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.job" autocomplete="off" />
+                </el-form-item>
+                <el-form-item label="mgr" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.mgr" autocomplete="off" />
+                </el-form-item>
+                <el-form-item label="hiredate" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.hiredate" autocomplete="off" />
+                </el-form-item>
+                <el-form-item label="sal" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.sal" autocomplete="off" />
+                </el-form-item>
+                <el-form-item label="comm" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.comm" autocomplete="off" />
+                </el-form-item>
+                <el-form-item label="deptno" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.deptno" autocomplete="off" />
+                </el-form-item>
+
+
+
+
+                <!-- <el-form-item label="Zones" :label-width="formLabelWidth">
+                    <el-select v-model="form.region" placeholder="Please select a zone">
+                        <el-option label="Zone No.1" value="shanghai" />
+                        <el-option label="Zone No.2" value="beijing" />
+                    </el-select>
+                </el-form-item> -->
+            </el-form>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="dialogFormVisible = false">Cancel</el-button>
+                    <el-button type="primary" @click="dialogFormVisible = false">
+                        Confirm
+                    </el-button>
+                </div>
+            </template>
+        </el-dialog>
+    </div>
+
+
+
+
+
 </template>
 
 
@@ -47,14 +106,57 @@
 <script setup>
 
 import axios from 'axios'
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 
-const currentPage4 = ref(4)
+const dialogFormVisible = ref(false)
+const formLabelWidth = '140px'
+
+
+
+// private Integer empno;
+
+// private String ename;
+
+// private String job;
+
+// private Integer mgr;
+
+// private LocalDate hiredate;
+
+// private BigDecimal sal;
+
+// private BigDecimal comm;
+
+// private Integer deptno;
+
+
+const empInfo = reactive({
+    empno: '',
+    ename: '',
+    job: '',
+    mgr: '',
+    hiredate: '2025-01-01',
+    sal: '',
+    comm: '',
+    deptno: '',
+})
+
+
+
+
+
+const currentPage4 = ref(1)
 const pageSize4 = ref(5)
 const size = ref("large")
 
 const background = ref(false)
 const disabled = ref(false)
+
+const totalValue = ref(0)
+
+
+
 
 const getDataFromBackEnd = () => {
     axios.get(
@@ -68,10 +170,109 @@ const getDataFromBackEnd = () => {
         console.log(response);
         // 这是在请求成功后打印服务器返回的响应数据，通常用来调试和查看服务器返回的内容。
         // response 是 Axios 返回的一个包含数据的对象。
-        tableData.value = response.data
+        tableData.value = response.data.records
+        totalValue.value = response.data.total;
     })
 
 }
+
+
+
+
+const editDataFromBackEndGetEmpById = (row) => {
+
+    console.log('row', row);
+    dialogFormVisible.value = true;
+    axios.get(
+        'http://localhost:8081/emp/getEmpBYEmpno', {
+        params: {
+            empno: row.empno
+        }
+    }
+    ).then(function (response) {
+        console.log(response);
+
+        // empinfo.value = response.data;
+        // 用于将整个 response.data 赋值给 empInfo.value，
+        // 并且 empInfo 中其他属性不受影响。
+
+        Object.assign(empInfo, response.data);
+        //Object.assign(empInfo, response.data); 
+        // 将 response.data 的属性逐一复制到 empInfo 中，
+        // 可能会覆盖 empInfo 中已有的属性。
+
+    })
+
+}
+const editDataFromBackEnd = (row) => {
+
+    console.log('row', row);
+    dialogFormVisible.value = true;
+    axios.get(
+        'http://localhost:8081/emp/updateEmpByEmpno', empInfo
+    ).then(function (response) {
+        console.log(response);
+
+        if (response.data = true) {
+            ElMessage({
+                message: 'Congrats, this is a success message.',
+                type: 'success',
+                plain: true,
+            })
+        } else {
+            ElMessage({
+                message: 'Oops, this is a error message.',
+                type: 'error',
+                plain: true,
+            })
+        }
+
+
+        // empinfo.value = response.data;
+        // 用于将整个 response.data 赋值给 empInfo.value，
+        // 并且 empInfo 中其他属性不受影响。
+
+        Object.assign(empInfo, response.data);
+        //Object.assign(empInfo, response.data); 
+        // 将 response.data 的属性逐一复制到 empInfo 中，
+        // 可能会覆盖 empInfo 中已有的属性。
+
+    })
+
+}
+
+
+const deleteDataFromBackEnd = () => {
+    axios.get(
+        'http://localhost:8081/emp/getAllEmpsByPageCondition', {
+        params: {
+            pageSize: pageSize4.value,
+            pageNum: currentPage4.value
+        }
+    }
+    ).then(function (response) {
+        console.log(response);
+        // 这是在请求成功后打印服务器返回的响应数据，通常用来调试和查看服务器返回的内容。
+        // response 是 Axios 返回的一个包含数据的对象。
+        tableData.value = response.data.records
+        totalValue.value = response.data.total;
+    })
+
+}
+
+
+
+
+//如果你把数据请求放在 mounted() 中，
+// 意味着它只会在组件的初次加载时执行一次，避免了不必要的重复请求。
+onMounted(() => {
+    // 在组件挂载后获取数据
+    getDataFromBackEnd();
+
+})
+
+
+
 
 const handleSizeChange = (val) => {
     console.log(`${val} items per page`)
@@ -87,44 +288,6 @@ const handleClick = () => {
     console.log('click')
 }
 
-// const tableData = [
-//     {
-//         date: '2016-05-03',
-//         name: 'Tom',
-//         state: 'California',
-//         city: 'Los Angeles',
-//         address: 'No. 189, Grove St, Los Angeles',
-//         zip: 'CA 90036',
-//         tag: 'Home',
-//     },
-//     {
-//         date: '2016-05-02',
-//         name: 'Tom',
-//         state: 'California',
-//         city: 'Los Angeles',
-//         address: 'No. 189, Grove St, Los Angeles',
-//         zip: 'CA 90036',
-//         tag: 'Office',
-//     },
-//     {
-//         date: '2016-05-04',
-//         name: 'Tom',
-//         state: 'California',
-//         city: 'Los Angeles',
-//         address: 'No. 189, Grove St, Los Angeles',
-//         zip: 'CA 90036',
-//         tag: 'Home',
-//     },
-//     {
-//         date: '2016-05-01',
-//         name: 'Tom',
-//         state: 'California',
-//         city: 'Los Angeles',
-//         address: 'No. 189, Grove St, Los Angeles',
-//         zip: 'CA 90036',
-//         tag: 'Office',
-//     },
-// ]
 
 
 const tableData = ref(null)
