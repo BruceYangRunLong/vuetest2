@@ -15,7 +15,7 @@
                         <el-button link type="primary" size="small" @click="editDataFromBackEndGetEmpById(scope.row)">
                             Edit
                         </el-button>
-                        <el-button link type="primary" size="small">
+                        <el-button link type="primary" size="small" @click="deleteDataFromBackEndShowDialog(scope.row)">
                             Delete
                         </el-button>
                     </template>
@@ -86,13 +86,32 @@
             <template #footer>
                 <div class="dialog-footer">
                     <el-button @click="dialogFormVisible = false">Cancel</el-button>
-                    <el-button type="primary" @click="dialogFormVisible = false">
+                    <el-button type="primary" @click="editDataFromBackEnd">
                         Confirm
                     </el-button>
                 </div>
             </template>
         </el-dialog>
     </div>
+
+
+
+
+    <el-dialog v-model="dialogVisibleConfirmDelete" 
+    title="Tips" 
+    width="500" :before-close="handleClose">Confirm Deletion {{ deleteEmpInfo.empno }} ,{{ deleteEmpInfo.ename }}
+        <span></span>
+        <template #footer>
+            <div class="dialog-footer">
+                <el-button @click="dialogVisibleConfirmDelete = false">Cancel</el-button>
+                <el-button type="primary" @click="deleteDataFromBackEnd">
+                    Confirm
+                </el-button>
+            </div>
+        </template>
+    </el-dialog>
+
+
 
 
 
@@ -108,10 +127,12 @@
 import axios from 'axios'
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import { tr } from 'element-plus/es/locales.mjs'
 
 const dialogFormVisible = ref(false)
 const formLabelWidth = '140px'
 
+const dialogVisibleConfirmDelete = ref(false)
 
 
 // private Integer empno;
@@ -154,6 +175,9 @@ const background = ref(false)
 const disabled = ref(false)
 
 const totalValue = ref(0)
+
+const deleteEmpInfo = ref(null)
+
 
 
 
@@ -207,27 +231,27 @@ const editDataFromBackEndGetEmpById = (row) => {
 const editDataFromBackEnd = (row) => {
 
     console.log('row', row);
-    dialogFormVisible.value = true;
-    axios.get(
+    // dialogFormVisible.value = true;
+    axios.post(
         'http://localhost:8081/emp/updateEmpByEmpno', empInfo
     ).then(function (response) {
         console.log(response);
 
         if (response.data = true) {
             ElMessage({
-                message: 'Congrats, this is a success message.',
+                message: 'Congrats, this is a success message for edit.',
                 type: 'success',
                 plain: true,
             })
         } else {
             ElMessage({
-                message: 'Oops, this is a error message.',
+                message: 'Oops, this is a error message for edit.',
                 type: 'error',
                 plain: true,
             })
         }
-
-
+        getDataFromBackEnd();
+        dialogFormVisible.value = false;
         // empinfo.value = response.data;
         // 用于将整个 response.data 赋值给 empInfo.value，
         // 并且 empInfo 中其他属性不受影响。
@@ -241,21 +265,46 @@ const editDataFromBackEnd = (row) => {
 
 }
 
+const deleteDataFromBackEndShowDialog = (row) => {
+
+    dialogVisibleConfirmDelete.value = true;
+    deleteEmpInfo.value = row
+}
 
 const deleteDataFromBackEnd = () => {
+
+    dialogVisibleConfirmDelete.value = false;
     axios.get(
-        'http://localhost:8081/emp/getAllEmpsByPageCondition', {
+        'http://localhost:8081/emp/deleteEmpByEmpno', {
         params: {
-            pageSize: pageSize4.value,
-            pageNum: currentPage4.value
+            empno: deleteEmpInfo.value.empno
         }
     }
     ).then(function (response) {
-        console.log(response);
-        // 这是在请求成功后打印服务器返回的响应数据，通常用来调试和查看服务器返回的内容。
-        // response 是 Axios 返回的一个包含数据的对象。
-        tableData.value = response.data.records
-        totalValue.value = response.data.total;
+        if (response.data = true) {
+            ElMessage({
+                message: 'Congrats, this is a success message for delete.',
+                type: 'success',
+                plain: true,
+            })
+        } else {
+            ElMessage({
+                message: 'Oops, this is a error message for delete.',
+                type: 'error',
+                plain: true,
+            })
+        }
+        getDataFromBackEnd();
+        // dialogFormVisible.value = false;
+        // empinfo.value = response.data;
+        // 用于将整个 response.data 赋值给 empInfo.value，
+        // 并且 empInfo 中其他属性不受影响。
+
+        // Object.assign(empInfo, response.data);
+        //Object.assign(empInfo, response.data); 
+        // 将 response.data 的属性逐一复制到 empInfo 中，
+        // 可能会覆盖 empInfo 中已有的属性。
+
     })
 
 }
