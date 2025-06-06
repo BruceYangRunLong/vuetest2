@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import AboutView from '../views/AboutView.vue'
 import LoginView from '../views/LoginView.vue'
 import EmpsView from '../views/EmpsView.vue'
+import uploadDownloadView from '../views/uploadDownloadView.vue'    
 
 
 const routes = [
@@ -26,7 +27,18 @@ const routes = [
         path:'/emps',
         name:'emps',
         component: EmpsView
-    }
+    },
+    {
+        path:'/uploadAndDownload',
+        name:'uploadAndDownload',
+        component: uploadDownloadView
+    },
+   
+    {
+        path: '/xray-analysis',
+        name: 'xray-analysis',
+        component: () => import('../views/XrayAnalysis.vue')
+    },
 ]
 
 const router = createRouter({

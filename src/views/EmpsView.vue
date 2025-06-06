@@ -1,6 +1,21 @@
 <template>
     <div>
         <div>
+            <el-input v-model="queryCondition.empno" style="width: 240px" placeholder="Please input empno" />
+            <el-input v-model="queryCondition.ename" style="width: 240px" placeholder="Please input ename" />
+            <el-button type="primary"  @click="searchEmpsByCondition">
+                searchEmpsByCondition
+            </el-button>
+            <el-button type="primary"  @click="addNewEmp1">
+                Add
+            </el-button>
+
+
+        </div>
+
+
+
+        <div>
             <el-table :data="tableData" style="width: 100%">
                 <el-table-column fixed prop="empno" label="Empno" width="150" />
                 <el-table-column prop="ename" label="Name" width="120" />
@@ -96,10 +111,51 @@
 
 
 
+    <div>
+        <el-dialog v-model="dialogFormVisibleAdd" title="Add Employee" width="500">
+            <el-form :model="form">
+                <el-form-item label="empno" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.empno" autocomplete="off" />
+                </el-form-item>
+                <el-form-item label="ename" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.ename" autocomplete="off" />
+                </el-form-item>
+                <el-form-item label="job" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.job" autocomplete="off" />
+                </el-form-item>
+                <el-form-item label="mgr" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.mgr" autocomplete="off" />
+                </el-form-item>
+                <el-form-item label="hiredate" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.hiredate" autocomplete="off" />
+                </el-form-item>
+                <el-form-item label="sal" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.sal" autocomplete="off" />
+                </el-form-item>
+                <el-form-item label="comm" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.comm" autocomplete="off" />
+                </el-form-item>
+                <el-form-item label="deptno" :label-width="formLabelWidth">
+                    <el-input v-model="empInfo.deptno" autocomplete="off" />
+                </el-form-item>
+
+            </el-form>
+            <template #footer>
+                <div class="dialog-footer">
+                    <el-button @click="dialogFormVisible = false">Cancel</el-button>
+                    <el-button type="primary" @click="addNewEmp">
+                        Confirm
+                    </el-button>
+                </div>
+            </template>
+        </el-dialog>
+    </div>
+
+
 
     <el-dialog v-model="dialogVisibleConfirmDelete" 
     title="Tips" 
-    width="500" :before-close="handleClose">Confirm Deletion {{ deleteEmpInfo.empno }} ,{{ deleteEmpInfo.ename }}
+    width="500" >Confirm Deletion {{ deleteEmpInfo.empno }} ,{{ deleteEmpInfo.ename }}
         <span></span>
         <template #footer>
             <div class="dialog-footer">
@@ -127,9 +183,11 @@
 import axios from 'axios'
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { tr } from 'element-plus/es/locales.mjs'
+import { ta, tr } from 'element-plus/es/locales.mjs'
 
 const dialogFormVisible = ref(false)
+const dialogFormVisibleAdd = ref(false)
+
 const formLabelWidth = '140px'
 
 const dialogVisibleConfirmDelete = ref(false)
@@ -177,9 +235,34 @@ const disabled = ref(false)
 const totalValue = ref(0)
 
 const deleteEmpInfo = ref(null)
+const queryCondition = ref({
+    empno: null,
+    ename: null,
+})
 
 
 
+const searchEmpsByCondition = () =>{
+
+    console.log('searchEmpsByCondition');
+    console.log('queryCondition', queryCondition.value);
+
+    axios.post(
+        'http://localhost:8081/emp/searchEmpsByCondition', {
+       
+            pageNum: currentPage4.value,
+            pageSize: pageSize4.value,
+            ename: queryCondition.value.ename,
+            empno: queryCondition.value.empno
+
+        
+    }
+    ).then(function (response) {
+        console.log(response);
+        tableData.value = response.data.records
+        totalValue.value = response.data.total;
+    })
+}
 
 
 const getDataFromBackEnd = () => {
@@ -200,8 +283,41 @@ const getDataFromBackEnd = () => {
 
 }
 
+const addNewEmp1 = () => {
+    dialogFormVisibleAdd.value = true;
+}
 
+const addNewEmp = (row) => {
 
+    console.log('row', row);
+    // dialogFormVisibleAdd.value = true;
+    axios.post(
+        'http://localhost:8081/emp/addNewEmp', empInfo
+    ).then(function (response) {
+        console.log(response);
+
+        // if (response.data = true) {
+        //     ElMessage({
+        //         message: 'Congrats, this is a success message for edit.',
+        //         type: 'success',
+        //         plain: true,
+        //     })
+        // } else {
+        //     ElMessage({
+        //         message: 'Oops, this is a error message for edit.',
+        //         type: 'error',
+        //         plain: true,
+        //     })
+        // }
+        getDataFromBackEnd();
+        // dialogFormVisible.value = false;
+        
+        // Object.assign(empInfo, response.data);
+        
+
+    })
+
+}
 
 const editDataFromBackEndGetEmpById = (row) => {
 

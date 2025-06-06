@@ -1,7 +1,3 @@
-<!-- <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-</script> -->
-
 <template>
   <!-- <div>
     <a href="https://vite.dev" target="_blank">
@@ -11,15 +7,17 @@ import HelloWorld from './components/HelloWorld.vue'
       <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
     </a>
   </div> -->
-  <router-view/>
+
+  <router-view />
 </template>
 
 <script setup>
-  import HelloWorld from './components/HelloWorld.vue';
+import HelloWorld from './components/HelloWorld.vue';
 </script>
 
 
 <style scoped>
+
 .logo {
   height: 6em;
   padding: 1.5em;
